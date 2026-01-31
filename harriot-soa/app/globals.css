@@ -4,28 +4,27 @@
 
 @layer base {
   :root {
-    /* VISIBILITY UPGRADE: Lighter Backgrounds & Higher Contrast */
-    
-    /* Background: Deep Midnight (#0f1116) - Visible but still luxury */
+    /* Background: Deep Midnight (#0f1116) */
     --background: 226 18% 7%; 
     --foreground: 210 40% 98%;
 
-    /* Cards: Lighter Zinc (#18181b) - distinct from background */
+    /* Cards: Lighter Zinc (#18181b) for depth */
     --card: 240 5% 10%;
     --card-foreground: 210 40% 98%;
 
     --popover: 240 5% 10%;
     --popover-foreground: 210 40% 98%;
 
-    /* GOLD ACCENT (#D4AF37) */
+    /* GOLD ACCENT (#D4AF37) - The Primary Brand Color */
     --primary: 45 93% 40%;
     --primary-foreground: 222 47.4% 11.2%;
 
-    /* EMERALD SECONDARY */
+    /* EMERALD SECONDARY (Healthy Status / Success) */
     --secondary: 142 71% 45%;
     --secondary-foreground: 222 47.4% 11.2%;
 
-    --muted: 217 33% 15%; /* Lighter muted areas */
+    /* MUTED TEXT & BORDERS */
+    --muted: 217 33% 15%;
     --muted-foreground: 215 20% 70%;
 
     --accent: 217 33% 15%;
@@ -34,7 +33,7 @@
     --destructive: 0 62% 30%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217 20% 18%; /* Visible borders */
+    --border: 217 20% 18%;
     --input: 217 20% 18%;
     --ring: 45 93% 40%;
 
@@ -47,7 +46,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground font-sans antialiased;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-serif;

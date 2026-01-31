@@ -5,14 +5,14 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { Points, PointMaterial, Float, Sphere, MeshDistortMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 
-// 1. Core Globe
+// 1. Core Globe - NOW GLOWING BRIGHTER
 function CoreGlobe() {
   return (
     <Sphere args={[14, 64, 64]}>
       <MeshDistortMaterial
         color="#000000"
-        emissive="#D4AF37"
-        emissiveIntensity={0.2}
+        emissive="#D4AF37"      // The Gold Color
+        emissiveIntensity={0.8} // INCREASED: Makes it glow heavily
         roughness={0.1}
         metalness={1}
         distort={0.4}
@@ -23,14 +23,14 @@ function CoreGlobe() {
   );
 }
 
-// 2. Atmosphere
+// 2. Atmosphere - INCREASED VISIBILITY
 function Atmosphere() {
   return (
     <Sphere args={[14.5, 64, 64]}>
       <meshPhysicalMaterial
         color="#D4AF37"
         transparent
-        opacity={0.05}
+        opacity={0.15} // INCREASED: More visible golden halo
         side={THREE.BackSide}
         blending={THREE.AdditiveBlending}
       />
@@ -40,7 +40,6 @@ function Atmosphere() {
 
 // 3. Particle Field
 function ParticleField() {
-  // Fixed: typed ref correctly
   const ref = useRef<THREE.Points>(null!);
   
   const particles = useMemo(() => {
@@ -69,10 +68,10 @@ function ParticleField() {
         <PointMaterial
           transparent
           color="#F3E5AB"
-          size={0.05}
+          size={0.06} // Slightly larger stars
           sizeAttenuation={true}
           depthWrite={false}
-          opacity={0.6}
+          opacity={0.8} // Brighter stars
           blending={THREE.AdditiveBlending}
         />
       </Points>
@@ -84,11 +83,8 @@ function ParticleField() {
 function DataArcs() {
   const ref = useRef<THREE.Group>(null!);
   
-  // Calculate curves once
-  const { lines, positions } = useMemo(() => {
-    const lines = [];
+  const { positions } = useMemo(() => {
     const positions = [];
-    
     for (let i = 0; i < 12; i++) {
       const curve = new THREE.CubicBezierCurve3(
         new THREE.Vector3((Math.random() - 0.5) * 25, (Math.random() - 0.5) * 25, 15),
@@ -97,11 +93,9 @@ function DataArcs() {
         new THREE.Vector3((Math.random() - 0.5) * 25, (Math.random() - 0.5) * 25, -15)
       );
       const points = curve.getPoints(40);
-      lines.push(points);
-      // Flatten points for buffer attribute
       positions.push(new Float32Array(points.flatMap(p => [p.x, p.y, p.z])));
     }
-    return { lines, positions };
+    return { positions };
   }, []);
 
   useFrame((state, delta) => {
@@ -115,14 +109,13 @@ function DataArcs() {
       {positions.map((pos, i) => (
         <line key={i}>
           <bufferGeometry>
-            {/* FIXED: Passed array via args to constructor to solve Red Squiggle */}
             <bufferAttribute
               attach="attributes-position"
               count={pos.length / 3}
               args={[pos, 3]} 
             />
           </bufferGeometry>
-          <lineBasicMaterial color="#D4AF37" transparent opacity={0.2} linewidth={1} />
+          <lineBasicMaterial color="#D4AF37" transparent opacity={0.4} linewidth={1} />
         </line>
       ))}
     </group>
@@ -132,10 +125,15 @@ function DataArcs() {
 export default function WorldBrainScene() {
   return (
     <div className="absolute inset-0 z-0 h-full w-full pointer-events-none">
-      <Canvas camera={{ position: [0, 0, 40], fov: 35 }} gl={{ antialias: true, alpha: true }}>
-        <fog attach="fog" args={['#02040a', 20, 90]} />
-        <ambientLight intensity={0.5} />
-        <pointLight position={[50, 50, 50]} intensity={2} color="#D4AF37" />
+      <Canvas camera={{ position: [0, 0, 35], fov: 40 }} gl={{ antialias: true, alpha: true }}>
+        {/* Adjusted Fog to let the center shine through */}
+        <fog attach="fog" args={['#02040a', 25, 60]} />
+        
+        {/* INCREASED LIGHTING INTENSITY */}
+        <ambientLight intensity={1.5} /> 
+        <pointLight position={[50, 50, 50]} intensity={5} color="#D4AF37" />
+        <pointLight position={[-50, -50, -50]} intensity={5} color="#F3E5AB" />
+        
         <Float speed={1.5} rotationIntensity={0.5} floatIntensity={0.5}>
           <CoreGlobe />
           <Atmosphere />

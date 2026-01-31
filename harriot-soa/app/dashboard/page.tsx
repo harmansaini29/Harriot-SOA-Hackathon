@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { motion, type Variants } from "framer-motion"; 
 import { useAppStore } from '@/lib/store';
-import { useRouter } from 'next/navigation'; // Navigation Hook
-import { ArrowUpRight, ArrowDownRight, Users, DollarSign, Zap, Activity, Cpu, Radio, Crown } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Users, DollarSign, Zap, Activity, Cpu, Radio, Crown } from 'lucide-react';
 import { TiltCard } from "@/components/ui/3d-card"; 
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
@@ -23,7 +23,7 @@ const itemVars: Variants = {
 export default function DashboardPage() {
   const { revenue, occupancy, activeAgents, criticalAlerts, simulateLiveFeed } = useAppStore();
   const [mounted, setMounted] = useState(false);
-  const router = useRouter(); // Initialize Router
+  const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
@@ -52,22 +52,22 @@ export default function DashboardPage() {
             <h2 className="text-4xl font-serif font-medium tracking-tight text-white">
               Command Center
             </h2>
-            <div className="p-1.5 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/20">
-              <Crown className="w-5 h-5 text-[#D4AF37]" />
+            <div className="p-1.5 rounded-lg bg-primary/10 border border-primary/20">
+              <Crown className="w-5 h-5 text-primary" />
             </div>
           </motion.div>
           <p className="text-slate-400 text-sm flex items-center gap-2 font-mono">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#D4AF37] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#D4AF37]"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
             </span>
             NEURAL CORE: ONLINE • MONITORING 25 ASSETS
           </p>
         </div>
         
         <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
-           <Cpu className="w-4 h-4 text-emerald-400 animate-pulse" />
-           <span className="text-xs font-mono text-slate-300">SYSTEM LATENCY: <span className="text-emerald-400">12ms</span></span>
+           <Cpu className="w-4 h-4 text-secondary animate-pulse" />
+           <span className="text-xs font-mono text-slate-300">SYSTEM LATENCY: <span className="text-secondary">12ms</span></span>
         </div>
       </div>
 
@@ -81,13 +81,13 @@ export default function DashboardPage() {
 
       {/* 3. Main Intelligence Terminal */}
       <motion.div variants={itemVars} className="relative group rounded-2xl">
-        <div className="absolute -inset-[1px] bg-gradient-to-r from-[#D4AF37]/20 via-transparent to-[#D4AF37]/20 rounded-2xl opacity-50 blur-sm group-hover:opacity-100 transition duration-700" />
+        <div className="absolute -inset-[1px] bg-gradient-to-r from-primary/20 via-transparent to-primary/20 rounded-2xl opacity-50 blur-sm group-hover:opacity-100 transition duration-700" />
         
-        <div className="relative bg-[#050505] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
-          <div className="px-6 py-4 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
+        <div className="relative bg-card border border-border rounded-2xl overflow-hidden shadow-2xl">
+          <div className="px-6 py-4 border-b border-border flex justify-between items-center bg-white/[0.02]">
             <h3 className="text-lg font-medium text-slate-200 font-serif">Live Portfolio Feed</h3>
             <div className="flex items-center gap-3">
-               <Badge variant="outline" className="border-[#D4AF37]/30 text-[#D4AF37] bg-[#D4AF37]/5 font-mono text-[10px] tracking-wider">
+               <Badge variant="outline" className="border-primary/30 text-primary bg-primary/5 font-mono text-[10px] tracking-wider">
                  AES-256 ENCRYPTED
                </Badge>
             </div>
@@ -111,12 +111,11 @@ export default function DashboardPage() {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.05 }}
-                    // NAVIGATION EVENT: Clicking row goes to property details
                     onClick={() => router.push(`/dashboard/properties/${property.id}`)}
                     className="hover:bg-white/[0.03] transition-colors cursor-pointer group/row"
                    >
                      <td className="px-6 py-5">
-                       <div className="font-medium text-slate-200 group-hover/row:text-[#D4AF37] transition-colors text-base">
+                       <div className="font-medium text-slate-200 group-hover/row:text-primary transition-colors text-base">
                          {property.name}
                        </div>
                        <div className="text-xs text-slate-600 font-mono mt-0.5">{property.location}</div>
@@ -127,7 +126,11 @@ export default function DashboardPage() {
                      <td className="px-6 py-5">
                        <div className="flex items-center gap-4">
                          <span className="text-sm font-mono text-slate-300 w-8 tabular-nums">{property.occupancy}%</span>
-                         <Progress value={property.occupancy} className="h-1 w-24 bg-slate-800" indicatorColor={property.occupancy < 50 ? 'bg-red-500' : 'bg-[#D4AF37]'} />
+                         <Progress 
+                           value={property.occupancy} 
+                           className="h-1 w-24 bg-slate-800" 
+                           indicatorColor={property.occupancy < 50 ? 'bg-red-500' : 'bg-secondary'} 
+                         />
                        </div>
                      </td>
                      <td className="px-6 py-5 text-right font-mono text-slate-300 tabular-nums text-base">
@@ -135,7 +138,7 @@ export default function DashboardPage() {
                      </td>
                      <td className="px-6 py-5 text-right">
                         {property.actions > 0 ? (
-                           <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/20 shadow-[0_0_15px_-5px_rgba(212,175,55,0.3)]">
+                           <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20 shadow-[0_0_15px_-5px_rgba(212,175,55,0.3)]">
                              {property.actions} PENDING
                            </div>
                         ) : (
@@ -153,15 +156,17 @@ export default function DashboardPage() {
   );
 }
 
-// Sub-components used above
+// --- Sub-components ---
+
 function MetricCard({ title, value, icon: Icon, trend, trendLabel, color, live }: any) {
   const colors = {
-    gold: "border-[#D4AF37]/20 bg-[#D4AF37]/5 text-[#D4AF37]",
+    gold: "border-primary/20 bg-primary/5 text-primary",
     platinum: "border-slate-400/20 bg-slate-400/5 text-slate-200",
     crimson: "border-red-500/20 bg-red-900/10 text-red-400",
     bronze: "border-orange-500/20 bg-orange-900/10 text-orange-400",
   };
   const selectedColor = colors[color as keyof typeof colors];
+  
   return (
     <TiltCard className={cn("backdrop-blur-sm", selectedColor)}>
       <div className="flex flex-row items-center justify-between pb-2">
@@ -172,7 +177,7 @@ function MetricCard({ title, value, icon: Icon, trend, trendLabel, color, live }
         {value}
       </div>
       <div className="flex items-center text-xs mt-3 font-mono opacity-80">
-        {live ? (<Radio className="mr-2 h-3 w-3 animate-pulse text-[#D4AF37]" />) : (<span className="mr-2">{trend}</span>)}
+        {live ? (<Radio className="mr-2 h-3 w-3 animate-pulse text-primary" />) : (<span className="mr-2">{trend}</span>)}
         {live ? "LIVE FEED" : trendLabel}
       </div>
     </TiltCard>
@@ -183,7 +188,7 @@ function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
     'Critical': "bg-red-500/10 text-red-400 border-red-500/20 shadow-[0_0_10px_-3px_rgba(220,38,38,0.4)]",
     'At Risk': "bg-orange-500/10 text-orange-400 border-orange-500/20",
-    'Healthy': "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+    'Healthy': "bg-secondary/10 text-secondary border-secondary/20"
   };
   return (
     <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${styles[status] || styles['Healthy']}`}>

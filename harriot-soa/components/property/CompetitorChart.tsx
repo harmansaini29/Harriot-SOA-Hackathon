@@ -2,20 +2,24 @@
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const data = [
-  { day: 'Mon', you: 65, ritz: 70, fourS: 72 },
-  { day: 'Tue', you: 58, ritz: 68, fourS: 74 },
-  { day: 'Wed', you: 62, ritz: 75, fourS: 78 },
-  { day: 'Thu', you: 70, ritz: 80, fourS: 82 },
-  { day: 'Fri', you: 85, ritz: 88, fourS: 90 },
-  { day: 'Sat', you: 90, ritz: 92, fourS: 95 },
-  { day: 'Sun', you: 75, ritz: 85, fourS: 88 },
-];
+// In a real app, you'd pass the full array. Here we generate some data based on the current price
+export default function CompetitorChart({ data }: { data?: any }) {
+  // Generate dynamic data around the current price prop if available
+  const basePrice = data?.current || 412;
+  
+  const chartData = [
+    { day: 'Mon', you: basePrice - 20, ritz: basePrice + 10, fourS: basePrice + 15 },
+    { day: 'Tue', you: basePrice - 30, ritz: basePrice + 5, fourS: basePrice + 10 },
+    { day: 'Wed', you: basePrice - 10, ritz: basePrice + 20, fourS: basePrice + 25 },
+    { day: 'Thu', you: basePrice + 10, ritz: basePrice + 40, fourS: basePrice + 45 },
+    { day: 'Fri', you: basePrice + 50, ritz: basePrice + 60, fourS: basePrice + 65 },
+    { day: 'Sat', you: basePrice + 60, ritz: basePrice + 70, fourS: basePrice + 80 },
+    { day: 'Sun', you: basePrice + 20, ritz: basePrice + 30, fourS: basePrice + 35 },
+  ];
 
-export default function CompetitorChart() {
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+      <LineChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.2} vertical={false} />
         <XAxis 
            dataKey="day" 
@@ -30,7 +34,7 @@ export default function CompetitorChart() {
            tick={{fontSize: 12, fontFamily: 'monospace'}} 
            axisLine={false} 
            tickLine={false} 
-           tickFormatter={(value) => `${value}%`}
+           tickFormatter={(value) => `$${value}`}
         />
         <Tooltip 
            contentStyle={{ backgroundColor: '#0B0C10', borderColor: '#334155', borderRadius: '8px' }}
@@ -38,29 +42,11 @@ export default function CompetitorChart() {
            labelStyle={{ color: '#94a3b8', marginBottom: '8px' }}
         />
         
-        {/* Competitor 1: Ritz (Blue - Dashed) */}
-        <Line 
-           type="monotone" 
-           dataKey="ritz" 
-           stroke="#60a5fa" 
-           strokeWidth={2} 
-           strokeDasharray="5 5" 
-           dot={false} 
-           activeDot={{ r: 4 }} 
-        />
+        {/* Competitors */}
+        <Line type="monotone" dataKey="ritz" stroke="#60a5fa" strokeWidth={2} strokeDasharray="5 5" dot={false} />
+        <Line type="monotone" dataKey="fourS" stroke="#c084fc" strokeWidth={2} strokeDasharray="5 5" dot={false} />
         
-        {/* Competitor 2: Four Seasons (Purple - Dashed) */}
-        <Line 
-           type="monotone" 
-           dataKey="fourS" 
-           stroke="#c084fc" 
-           strokeWidth={2} 
-           strokeDasharray="5 5" 
-           dot={false} 
-           activeDot={{ r: 4 }} 
-        />
-        
-        {/* YOU (Gold - Thick Solid) */}
+        {/* YOU - Gold */}
         <Line 
            type="monotone" 
            dataKey="you" 

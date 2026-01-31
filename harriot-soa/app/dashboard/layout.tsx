@@ -10,10 +10,10 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-screen overflow-hidden bg-[#0f1116]">
+    <div className="flex h-screen overflow-hidden bg-background">
       
       {/* 1. Desktop Sidebar (Fixed) */}
-      <aside className="hidden md:flex w-72 flex-col border-r border-white/10 bg-[#12141c] fixed h-full z-40">
+      <aside className="hidden md:flex w-72 flex-col border-r border-border bg-card fixed h-full z-50">
         <Sidebar />
       </aside>
 
@@ -21,7 +21,7 @@ export default function DashboardLayout({
       <main className="flex-1 md:ml-72 flex flex-col h-full relative z-10">
         
         {/* Sticky Header */}
-        <header className="sticky top-0 z-30 border-b border-white/10 bg-[#0f1116]/90 backdrop-blur-xl h-20">
+        <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-xl h-20">
           <Header />
         </header>
 
