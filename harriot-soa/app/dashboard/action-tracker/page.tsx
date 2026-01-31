@@ -7,7 +7,6 @@ import {
   Download, 
   MoreHorizontal, 
   Zap, 
-  Clock, 
   CheckCircle2, 
   RefreshCw,
   Building
@@ -25,9 +24,10 @@ const KanbanCard = ({ data }: { data: any }) => {
   return (
     <motion.div 
       layout
-      initial={{ opacity: 0, scale: 0.95 }}
+      initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="bg-[#13151E] border border-white/5 rounded-xl p-4 shadow-lg hover:border-white/10 transition-all group relative overflow-hidden"
+      whileHover={{ scale: 1.02, borderColor: "rgba(255,255,255,0.2)" }}
+      className="bg-[#13151E] border border-white/5 rounded-xl p-4 shadow-lg transition-all group relative overflow-hidden cursor-pointer"
     >
       {/* Left Accent Border */}
       <div className={`absolute left-0 top-0 bottom-0 w-1 ${data.accentColor || 'bg-slate-700'}`} />
@@ -50,7 +50,11 @@ const KanbanCard = ({ data }: { data: any }) => {
         )}
         {data.status === 'Active' && (
            <span className="text-[10px] flex items-center gap-1 text-emerald-400 font-bold tracking-wider">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> ACTIVE
+              <span className="relative flex h-2 w-2 mr-1">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              ACTIVE
            </span>
         )}
       </div>
@@ -62,7 +66,7 @@ const KanbanCard = ({ data }: { data: any }) => {
         
         {/* Specific Metrics per Type */}
         {data.uplift && (
-           <div className="mt-3 pt-3 border-t border-white/5">
+           <div className="mt-3 pt-3 border-t border-white/5 flex justify-between items-center">
               <div className="text-[10px] text-slate-500 uppercase font-semibold">Pred. Uplift</div>
               <div className="text-sm font-bold text-emerald-400">{data.uplift} <span className="text-slate-500 font-normal text-xs">{data.upliftUnit}</span></div>
            </div>
@@ -108,24 +112,24 @@ const KanbanCard = ({ data }: { data: any }) => {
 
 export default function ActionTrackerPage() {
   return (
-    <div className="flex flex-col h-full bg-[#0B0C15] text-slate-200">
+    <div className="flex flex-col h-full bg-[#0B0C15] text-slate-200 min-h-screen">
       
       {/* 1. Header Section */}
-      <div className="p-6 border-b border-white/5 space-y-6">
+      <div className="p-6 border-b border-white/5 space-y-6 bg-[#0B0C10]/95 backdrop-blur-xl sticky top-0 z-20">
         {/* Title Row */}
         <div className="flex items-center justify-between">
            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-white">Action Tracker: Feedback Loop</h1>
-              <Badge variant="outline" className="border-emerald-500/30 text-emerald-500 bg-emerald-500/10 px-2 py-0.5 text-xs font-mono">v2.4.1</Badge>
+              <h1 className="text-2xl font-bold text-white font-serif">Action Tracker</h1>
+              <Badge variant="outline" className="border-[#D4AF37]/30 text-[#D4AF37] bg-[#D4AF37]/10 px-2 py-0.5 text-xs font-mono">v2.4.1</Badge>
            </div>
            <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 text-sm text-slate-400 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
-                 <RefreshCw className="w-3 h-3" /> Last updated: just now
+                 <RefreshCw className="w-3 h-3 animate-spin-slow" /> Updated: just now
               </div>
-              <Button variant="outline" className="bg-[#13151E] border-white/10 text-slate-300 h-9 text-xs">
+              <Button suppressHydrationWarning variant="outline" className="bg-[#13151E] border-white/10 text-slate-300 h-9 text-xs hover:border-[#D4AF37]/50 transition-colors">
                  <Calendar className="w-3 h-3 mr-2" /> This Week
               </Button>
-              <Button className="bg-emerald-600 hover:bg-emerald-500 text-white h-9 text-xs font-semibold shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+              <Button suppressHydrationWarning className="bg-[#D4AF37] hover:bg-[#F3E5AB] text-black h-9 text-xs font-bold shadow-[0_0_15px_rgba(212,175,55,0.3)]">
                  <Download className="w-3 h-3 mr-2" /> Export Report
               </Button>
            </div>
@@ -149,34 +153,35 @@ export default function ActionTrackerPage() {
               <div className="relative w-64">
                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-500" />
                  <input 
+                   suppressHydrationWarning
                    type="text" 
                    placeholder="Filter by ID, Type, or Tags..." 
-                   className="w-full bg-[#13151E] border border-white/10 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500/50"
+                   className="w-full bg-[#13151E] border border-white/10 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-[#D4AF37]/50 focus:ring-1 focus:ring-[#D4AF37]/20 transition-all"
                  />
               </div>
               <div className="flex gap-2">
-                 <button className="px-3 py-1.5 rounded-md bg-emerald-500/20 text-emerald-400 text-xs font-medium border border-emerald-500/20 flex items-center gap-1">
+                 <button suppressHydrationWarning className="px-3 py-1.5 rounded-md bg-[#D4AF37]/10 text-[#D4AF37] text-xs font-medium border border-[#D4AF37]/20 flex items-center gap-1 hover:bg-[#D4AF37]/20 transition-colors">
                     <CheckCircle2 className="w-3 h-3" /> All Types
                  </button>
-                 <button className="px-3 py-1.5 rounded-md bg-[#13151E] text-slate-400 text-xs font-medium border border-white/10 hover:text-white">Pricing</button>
-                 <button className="px-3 py-1.5 rounded-md bg-[#13151E] text-slate-400 text-xs font-medium border border-white/10 hover:text-white">Inventory</button>
-                 <button className="px-3 py-1.5 rounded-md bg-[#13151E] text-slate-400 text-xs font-medium border border-white/10 hover:text-white">High Confidence {'>'}90%</button>
+                 <button suppressHydrationWarning className="px-3 py-1.5 rounded-md bg-[#13151E] text-slate-400 text-xs font-medium border border-white/10 hover:text-white hover:border-white/20 transition-colors">Pricing</button>
+                 <button suppressHydrationWarning className="px-3 py-1.5 rounded-md bg-[#13151E] text-slate-400 text-xs font-medium border border-white/10 hover:text-white hover:border-white/20 transition-colors">Inventory</button>
+                 <button suppressHydrationWarning className="px-3 py-1.5 rounded-md bg-[#13151E] text-slate-400 text-xs font-medium border border-white/10 hover:text-white hover:border-white/20 transition-colors">High Confidence {'>'}90%</button>
               </div>
            </div>
         </div>
       </div>
 
       {/* 2. Kanban Board */}
-      <div className="flex-1 overflow-x-auto p-6">
-         <div className="grid grid-cols-4 gap-6 min-w-[1000px] h-full">
+      <div className="flex-1 overflow-x-auto p-6 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+         <div className="grid grid-cols-4 gap-6 min-w-[1200px] h-full">
             
             {/* Column 1: PROPOSED */}
             <div className="flex flex-col gap-4">
-               <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider">
+               <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider pl-1">
                   <div className="flex items-center gap-2">
-                     <StatusDot color="bg-blue-500" /> Proposed <span className="bg-white/10 px-1.5 rounded text-slate-300">8</span>
+                     <StatusDot color="bg-blue-500" /> Proposed <span className="bg-white/10 px-1.5 py-0.5 rounded text-slate-300 font-mono">8</span>
                   </div>
-                  <MoreHorizontal className="w-4 h-4 cursor-pointer" />
+                  <MoreHorizontal className="w-4 h-4 cursor-pointer hover:text-white" />
                </div>
                
                <div className="flex flex-col gap-3">
@@ -197,11 +202,11 @@ export default function ActionTrackerPage() {
 
             {/* Column 2: APPROVED */}
             <div className="flex flex-col gap-4">
-               <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider">
+               <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider pl-1">
                   <div className="flex items-center gap-2">
-                     <StatusDot color="bg-amber-500" /> Approved <span className="bg-white/10 px-1.5 rounded text-slate-300">3</span>
+                     <StatusDot color="bg-amber-500" /> Approved <span className="bg-white/10 px-1.5 py-0.5 rounded text-slate-300 font-mono">3</span>
                   </div>
-                  <MoreHorizontal className="w-4 h-4 cursor-pointer" />
+                  <MoreHorizontal className="w-4 h-4 cursor-pointer hover:text-white" />
                </div>
 
                <div className="flex flex-col gap-3">
@@ -216,9 +221,9 @@ export default function ActionTrackerPage() {
 
             {/* Column 3: LIVE */}
             <div className="flex flex-col gap-4">
-               <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider">
+               <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider pl-1">
                   <div className="flex items-center gap-2">
-                     <StatusDot color="bg-emerald-500" /> Live <span className="bg-emerald-500/20 text-emerald-400 px-1.5 rounded">5</span>
+                     <StatusDot color="bg-emerald-500" /> Live <span className="bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded font-mono">5</span>
                   </div>
                </div>
 
@@ -238,9 +243,9 @@ export default function ActionTrackerPage() {
 
             {/* Column 4: MEASURING */}
             <div className="flex flex-col gap-4">
-               <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider">
+               <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider pl-1">
                   <div className="flex items-center gap-2">
-                     <StatusDot color="bg-purple-500" /> Measuring <span className="bg-white/10 px-1.5 rounded text-slate-300">2</span>
+                     <StatusDot color="bg-purple-500" /> Measuring <span className="bg-white/10 px-1.5 py-0.5 rounded text-slate-300 font-mono">2</span>
                   </div>
                </div>
 

@@ -5,38 +5,37 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { 
   LayoutDashboard, 
-  Building2, 
-  LineChart, 
+  BarChart2, 
   Settings, 
   LogOut, 
   Activity,
-  Workflow // Added for Action Tracker icon
+  Workflow
 } from 'lucide-react';
 
 const menuItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
-  { icon: Workflow, label: 'Action Tracker', href: '/dashboard/action-tracker' }, // Matches your screenshot flow
-  { icon: LineChart, label: 'Reports', href: '/dashboard/reports' },
-  { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
+  { icon: LayoutDashboard, label: 'Overview', href: '/dashboard' },
+  { icon: Workflow, label: 'Action Tracker', href: '/dashboard/action-tracker' },
+  { icon: BarChart2, label: 'Advanced Analytics', href: '/dashboard/charts' },
+  { icon: Settings, label: 'System Settings', href: '/dashboard/settings' },
 ];
 
-export function Sidebar() {
+export function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname();
 
   return (
-    <div className="flex flex-col h-full py-6 space-y-8 bg-[#0B0C15] border-r border-white/5">
-      {/* Logo Area */}
-      <div className="px-6 flex items-center gap-3 mb-2">
-        <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.4)]">
-          <Activity className="w-5 h-5 text-white" />
+    <div className={cn("flex flex-col h-full py-6 space-y-8", className)}>
+      {/* Logo */}
+      <div className="px-6 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-[#D4AF37] flex items-center justify-center shadow-lg shadow-[#D4AF37]/20">
+           <Activity className="w-6 h-6 text-black" />
         </div>
-        <span className="font-bold text-xl tracking-tight text-white">
-          Harriot<span className="text-slate-400">SOA</span>
+        <span className="font-serif font-bold text-xl tracking-tight text-white">
+          Harriot<span className="text-[#D4AF37]">SOA</span>
         </span>
       </div>
 
-      {/* Navigation Menu */}
-      <nav className="flex-1 px-3 space-y-1">
+      {/* Nav Items */}
+      <nav className="flex-1 px-4 space-y-2">
         {menuItems.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -44,29 +43,31 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group relative",
+                "flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-200 group relative",
                 isActive 
-                  ? "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20" 
-                  : "text-slate-400 hover:text-slate-100 hover:bg-white/5"
+                  ? "text-[#D4AF37] bg-[#D4AF37]/10 border border-[#D4AF37]/20" 
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
               )}
             >
-              <item.icon className={cn("w-5 h-5", isActive ? "text-emerald-400" : "text-slate-500 group-hover:text-slate-300")} />
-              {item.label}
+              <item.icon className={cn("w-5 h-5 transition-colors", isActive ? "text-[#D4AF37]" : "text-slate-500 group-hover:text-slate-300")} />
+              <span>{item.label}</span>
             </Link>
           );
         })}
       </nav>
 
-      {/* Bottom Actions */}
+      {/* User Footer */}
       <div className="px-4 mt-auto">
-        <div className="flex items-center gap-3 px-3 py-3 mb-4 rounded-xl bg-white/5 border border-white/5">
-           <div className="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30 text-xs font-bold text-indigo-400">AH</div>
-           <div className="text-xs">
-              <div className="text-white font-medium">Alex Hamilton</div>
-              <div className="text-slate-500">VP Revenue</div>
+        <div className="flex items-center gap-3 px-4 py-3 mb-4 rounded-xl bg-white/5 border border-white/10">
+           <div className="w-10 h-10 rounded-full bg-[#D4AF37] flex items-center justify-center text-xs font-bold text-black">
+             AH
+           </div>
+           <div className="overflow-hidden">
+              <div className="text-white text-sm font-medium truncate">Alex Hamilton</div>
+              <div className="text-slate-500 text-xs truncate">VP Revenue</div>
            </div>
         </div>
-        <button className="flex items-center gap-3 px-3 py-2 w-full rounded-lg text-xs font-medium text-slate-500 hover:text-red-400 hover:bg-red-950/10 transition-colors">
+        <button className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-red-400 hover:bg-red-500/10 transition-colors">
           <LogOut className="w-4 h-4" />
           Sign Out
         </button>
