@@ -1,25 +1,59 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion, type Variants } from 'framer-motion'; // FIXED: Added Variants type import
+import { motion, type Variants } from 'framer-motion';
 import { useParams, useRouter } from 'next/navigation';
 import { 
   MapPin, Star, TrendingUp, Users, 
   Coffee, Wifi, Waves, Dumbbell, 
-  ArrowLeft, Zap, ChevronRight, Building
+  ArrowLeft, Zap, ChevronRight, Building, Loader2
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+// import { toast } from 'sonner'; // Assuming you have sonner or similar for toasts
 
-// MOCK IMPORTS - Ensure these exist or these will be the only remaining errors
+// MOCK IMPORTS - Update these components to accept 'data' props!
 import CompetitorChart from '@/components/property/CompetitorChart';
 import SentimentRadar from '@/components/property/SentimentRadar';
 import MarketFactors from '@/components/property/MarketFactors';
 
-// --- FIXED: ANIMATION VARIANTS WITH EXPLICIT TYPES ---
+// --- TYPES ---
+interface PropertyBasic {
+  property_id: string;
+  name: string;
+  city: string;
+  status: string;
+  occupancy: number;
+  revpar: number;
+}
+
+interface PricingData {
+  avg_gap_percentage: number;
+  positioning: string;
+  pricing_data: any[];
+}
+
+interface ReviewData {
+  avg_rating: number;
+  total_reviews: number;
+  rating_distribution: Record<string, number>;
+}
+
+interface Amenity {
+  name: string;
+  available: boolean;
+  competitor_coverage: string | null;
+}
+
+interface TrendData {
+  avg_occupancy: number;
+  trends: any[];
+}
+
+// --- ANIMATION VARIANTS ---
 const containerVars: Variants = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { staggerChildren: 0.1 } }
@@ -30,33 +64,110 @@ const itemVars: Variants = {
   show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 50, damping: 20 } }
 };
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
 export default function PropertyDetailsPage() {
   const params = useParams();
   const router = useRouter();
+  
+  // UI State
   const [isGenerating, setIsGenerating] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Data State
+  const [property, setProperty] = useState<PropertyBasic | null>(null);
+  const [pricing, setPricing] = useState<PricingData | null>(null);
+  const [reviews, setReviews] = useState<ReviewData | null>(null);
+  const [amenities, setAmenities] = useState<Amenity[]>([]);
+  const [trends, setTrends] = useState<TrendData | null>(null);
 
   // Safe Parameter Access
-  const propertyId = (params?.id as string) || "1";
+  const propertyId = (params?.id as string) || "PROP_001";
 
+  // --- DATA FETCHING ---
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        // 1. Get Basic Info from Portfolio (to find Name/City)
+        const portfolioRes = await fetch(`${API_BASE_URL}/api/dashboard/portfolio`);
+        const portfolioData = await portfolioRes.json();
+        const currentProp = portfolioData.properties.find((p: any) => p.property_id === propertyId);
+        
+        // 2. Parallel fetch for details
+        const [pricingRes, reviewsRes, amenitiesRes, trendsRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/api/property/${propertyId}/competitor-pricing?days=30`),
+          fetch(`${API_BASE_URL}/api/property/${propertyId}/reviews?days=30`),
+          fetch(`${API_BASE_URL}/api/property/${propertyId}/amenities`),
+          fetch(`${API_BASE_URL}/api/property/${propertyId}/booking-trends?days=30`)
+        ]);
 
-  const property = {
-    name: "The Grand Budapest",
-    location: "Budapest, Hungary",
-    tier: "Luxury Collection",
-    revpar: 320,
-    occupancy: 68,
-  };
+        setProperty(currentProp || null);
+        setPricing(await pricingRes.json());
+        setReviews(await reviewsRes.json());
+        const amData = await amenitiesRes.json();
+        setAmenities(amData.amenities || []);
+        setTrends(await trendsRes.json());
 
-  const handleActionPlan = () => {
+      } catch (error) {
+        console.error("Failed to load property data", error);
+        //toast.error("Failed to load property data. Is the API running?");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (propertyId) {
+      fetchData();
+    }
+  }, [propertyId]);
+
+  // --- HANDLERS ---
+  const handleActionPlan = async () => {
     setIsGenerating(true);
-    setTimeout(() => setIsGenerating(false), 2000);
+    try {
+      console.log("data1")
+      const res = await fetch(`${API_BASE_URL}/api/analysis/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ property_id: propertyId, lookback_days: 30 })
+      });
+      console.log("data")
+      const data = await res.json();
+      console.log(data)
+      if (data.analysis_id) {
+         console.log("Analysis started! Redirecting...")
+         router.push(`/dashboard/analysis/${data.analysis_id}/pipeline`);
+        //toast.success("Analysis started! Redirecting...");
+        // Simulate short delay for UX then redirect to analysis page
+      //   setTimeout(() => {
+      //       router.push(`/analysis/${data.analysis_id}`);
+      //   }, 1500);
+      }
+    } catch (error) {
+      //toast.error("Failed to start analysis");
+      setIsGenerating(false);
+    }
   };
 
-  if (!mounted) return null;
+  // --- DERIVED METRICS ---
+  // Calculate latest ADR from trends if available
+  const latestADR = trends?.trends?.length 
+    ? trends.trends[trends.trends.length - 1].avg_rate 
+    : 0;
+
+  // Calculate Sentiment Score (0-100) from 5-star rating
+  const sentimentScore = reviews ? (reviews.avg_rating / 5) * 100 : 0;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#0f1116] flex items-center justify-center text-slate-400">
+        <Loader2 className="w-8 h-8 animate-spin text-[#D4AF37]" />
+      </div>
+    );
+  }
+
+  if (!property) return <div className="text-white p-10">Property not found.</div>;
 
   return (
     <div className="min-h-screen bg-[#0f1116] text-slate-200 pb-20 relative overflow-hidden font-sans">
@@ -92,7 +203,7 @@ export default function PropertyDetailsPage() {
                  <h1 className="text-2xl font-serif font-bold text-white flex items-center gap-3">
                     {property.name}
                     <Badge variant="outline" className="bg-[#D4AF37]/10 text-[#D4AF37] border-[#D4AF37]/30 font-mono text-[10px] tracking-wider px-2 py-0.5">
-                       GOLD TIER
+                        {property.status === 'healthy' ? 'GOLD TIER' : 'AT RISK'}
                     </Badge>
                  </h1>
               </div>
@@ -101,13 +212,14 @@ export default function PropertyDetailsPage() {
            <div className="flex items-center gap-6">
               <Button 
                 onClick={handleActionPlan}
+                disabled={isGenerating}
                 className={cn(
                   "bg-[#D4AF37] text-black hover:bg-[#F3E5AB] font-bold shadow-[0_0_20px_rgba(212,175,55,0.3)] transition-all duration-300",
-                  isGenerating && "opacity-80 scale-95"
+                  isGenerating && "opacity-80 scale-95 cursor-not-allowed"
                 )}
               >
                  <Zap className={cn("w-4 h-4 mr-2", isGenerating ? "animate-pulse" : "fill-black")} /> 
-                 {isGenerating ? "Optimizing..." : "Generate Action Plan"}
+                 {isGenerating ? "Analyzing..." : "Generate Action Plan"}
               </Button>
            </div>
         </div>
@@ -125,12 +237,12 @@ export default function PropertyDetailsPage() {
         <motion.div variants={itemVars} className="flex flex-wrap items-center gap-6 text-sm text-slate-400 border-b border-white/5 pb-6">
             <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-[#D4AF37]" />
-                {property.name}
+                {property.city}
             </div>
             <div className="w-1 h-1 rounded-full bg-slate-700" />
             <div className="flex items-center gap-2">
                 <Building className="w-4 h-4 text-slate-500" />
-                {property.tier}
+                {property.status.toUpperCase()}
             </div>
             <div className="ml-auto font-mono text-xs text-slate-600">
                 ASSET ID: {propertyId}
@@ -139,10 +251,30 @@ export default function PropertyDetailsPage() {
 
         {/* KPI Grid */}
         <motion.div variants={containerVars} className="grid grid-cols-1 md:grid-cols-4 gap-4">
-           <KpiCard label="Occupancy" value={`${property.occupancy}%`} trend="-5% vs Comp" color="red" />
-           <KpiCard label="ADR" value="$412" trend="+2% vs Comp" color="emerald" />
-           <KpiCard label="TrevPAR" value="$580" trend="+8% YoY" color="gold" />
-           <KpiCard label="Guest Sentiment" value="98.2" trend="Top 1%" color="purple" />
+           <KpiCard 
+             label="Occupancy" 
+             value={`${property.occupancy}%`} 
+             trend={trends?.trend_direction === 'declining' ? '▼ Declining' : '▲ Stable'} 
+             color={property.occupancy < 50 ? 'red' : 'emerald'} 
+           />
+           <KpiCard 
+             label="ADR" 
+             value={`$${latestADR.toLocaleString()}`} 
+             trend={pricing?.positioning === 'premium' ? 'Premium Pos.' : 'Competitive'} 
+             color="gold" 
+           />
+           <KpiCard 
+             label="RevPAR" 
+             value={`$${property.revpar}`} 
+             trend="Last 24h" 
+             color="emerald" 
+           />
+           <KpiCard 
+             label="Guest Sentiment" 
+             value={sentimentScore.toFixed(1)} 
+             trend={`${reviews?.total_reviews} Reviews`} 
+             color="purple" 
+           />
         </motion.div>
 
         {/* Competitor Pacing Engine */}
@@ -156,16 +288,23 @@ export default function PropertyDetailsPage() {
                        <TrendingUp className="w-5 h-5 text-[#D4AF37]" /> 
                        Competitive Pacing
                     </h3>
+                    <p className="text-xs text-slate-500 mt-1">
+                        Price Gap: <span className={pricing && pricing.avg_gap_percentage > 0 ? 'text-emerald-400' : 'text-red-400'}>
+                            {pricing?.avg_gap_percentage}% {pricing?.positioning}
+                        </span>
+                    </p>
                  </div>
               </div>
               
               <div className="h-[350px] w-full relative z-10">
-                 <CompetitorChart />
+                 {/* Pass the real data to your chart component */}
+                 <CompetitorChart data={pricing?.pricing_data || []} />
               </div>
            </motion.div>
 
            <motion.div variants={itemVars} className="lg:col-span-1 flex flex-col gap-6">
-              <MarketFactors />
+              {/* Pass property ID to fetch specific weather/market factors inside or pass data down */}
+              <MarketFactors propertyId={propertyId} />
            </motion.div>
         </div>
 
@@ -180,9 +319,12 @@ export default function PropertyDetailsPage() {
               </div>
               <div className="flex flex-col md:flex-row gap-8 items-center h-full pb-4">
                  <div className="w-full md:w-1/2 h-[220px]">
-                    <SentimentRadar />
+                    {/* Pass review distribution to Radar */}
+                    <SentimentRadar data={reviews?.rating_distribution} />
                  </div>
                  <div className="w-full md:w-1/2 space-y-5">
+                    {/* Note: Specific Business/Leisure segmentation requires running the AI Analysis. 
+                        Using static placeholders or derived mocks until analysis runs. */}
                     <SegmentBar label="Business" value={45} color="bg-indigo-500" />
                     <SegmentBar label="Leisure" value={30} color="bg-emerald-500" />
                     <SegmentBar label="Group" value={15} color="bg-amber-500" />
@@ -198,10 +340,22 @@ export default function PropertyDetailsPage() {
                   </h3>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                 <AmenityCard icon={Waves} name="Infinity Pool" status="High Util" trend="+12%" />
-                 <AmenityCard icon={Coffee} name="Michelin Dining" status="Booked" trend="+4%" />
-                 <AmenityCard icon={Dumbbell} name="Wellness Spa" status="Low Util" trend="-5%" alert />
-                 <AmenityCard icon={Wifi} name="Conf. Center" status="Active" trend="Stable" />
+                 {amenities.slice(0, 4).map((amenity, idx) => (
+                    <AmenityCard 
+                        key={idx}
+                        // Simple icon mapping based on name keywords - extend as needed
+                        icon={
+                            amenity.name.includes('WiFi') ? Wifi : 
+                            amenity.name.includes('Pool') ? Waves : 
+                            amenity.name.includes('Gym') ? Dumbbell : Coffee
+                        } 
+                        name={amenity.name} 
+                        status={amenity.available ? "Active" : "Unavailable"} 
+                        trend={amenity.competitor_coverage || "Unique"} 
+                        alert={!amenity.available}
+                    />
+                 ))}
+                 {amenities.length === 0 && <div className="text-slate-500 text-sm">No amenity data available</div>}
               </div>
            </motion.div>
         </div>
@@ -210,9 +364,8 @@ export default function PropertyDetailsPage() {
   );
 }
 
-// TYPES & SUB-COMPONENTS
+// --- SUB-COMPONENTS ---
 
-// FIXED: Local TiltCard
 function TiltCard({ children, className }: { children: React.ReactNode, className?: string }) {
     return (
         <motion.div 
@@ -286,9 +439,7 @@ function SegmentBar({ label, value, color }: SegmentBarProps) {
    )
 }
 
-// 1. UPDATE THE INTERFACE
 interface AmenityCardProps {
-  // FIX: Explicitly define that the icon component accepts a className prop
   icon: React.ElementType<{ className?: string }>; 
   name: string;
   status: string;
@@ -296,7 +447,6 @@ interface AmenityCardProps {
   alert?: boolean;
 }
 
-// 2. THE COMPONENT (No changes needed here, but included for context)
 function AmenityCard({ icon: Icon, name, status, trend, alert }: AmenityCardProps) {
    return (
       <div className={cn(
@@ -312,7 +462,6 @@ function AmenityCard({ icon: Icon, name, status, trend, alert }: AmenityCardProp
                "p-2.5 rounded-xl transition-colors",
                alert ? "bg-red-500/20 text-red-400" : "bg-[#0f1116] text-slate-300 group-hover:text-[#D4AF37]"
             )}>
-               {/* Now TypeScript knows Icon accepts className */}
                <Icon className="w-5 h-5" />
             </div>
          </div>
